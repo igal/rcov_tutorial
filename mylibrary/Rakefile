@@ -1,0 +1,36 @@
+require 'rubygems'
+require 'spec/rake/spectask'
+
+task :default => :spec
+
+# Provides :spec task
+@spectask = Spec::Rake::SpecTask.new do |t|
+  t.spec_files = FileList['spec/**/*_spec.rb']
+end
+
+desc 'Run specs and generate a code coverage report with RCov'
+task :rcov do
+  @spectask.rcov = true
+  @spectask.rcov_opts += ['--include', 'lib']
+  @spectask.rcov_opts += ['--exclude', 'spec']
+  Rake::Task[:spec].invoke
+  puts "Generated code coverage report at: coverage/index.html"
+end
+
+desc 'Save coverage status'
+task 'rcov:save' do
+  @spectask.rcov_opts << '--save'
+  Rake::Task[:rcov].invoke
+end
+
+desc 'Display diff of coverage status since last save'
+task 'rcov:diff' do
+  @spectask.rcov_opts << '--text-coverage-diff'
+  Rake::Task[:rcov].invoke
+end
+
+desc 'Clean up, delete coverage report and coverage status'
+task :clean do
+  rm_r 'coverage' rescue nil
+  rm_r 'coverage.info' rescue nil
+end
